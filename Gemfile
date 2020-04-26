@@ -13,11 +13,11 @@ gem "rake"
 gem "tty-logger"
 
 gem "sequel"
-gem "sequel_pg", require: 'sequel'
+gem "sequel_pg", require: "sequel"
 
 gem "rufus-scheduler"
 gem "localjob"
 
 gem "ferrum"
 
-
+gem "rubocop"

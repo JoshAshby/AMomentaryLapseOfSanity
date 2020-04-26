@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-require 'dotenv/load'
+require "dotenv/load"
 
-require 'tty-LOGGER'
+require "tty-logger"
 
-require 'sequel'
+require "sequel"
 
-require 'rufus-scheduler'
-require 'localjob'
+require "rufus-scheduler"
+require "localjob"
 
-require 'ferrum'
+require "ferrum"
 
 Sequel.extension :pg_array, :pg_json, :pg_array_ops, :pg_json_ops
 
@@ -20,13 +20,7 @@ LOGGER = TTY::Logger.new do |config|
   config.level = :debug
 end
 
-ferrum_logger = Struct.new "FerrumLogger" do
-  def puts(*args)
-    LOGGER.debug(*args)
-  end
-end
-
-browser = Ferrum::Browser.new timeout: 30#, logger: ferrum_logger.new
+browser = Ferrum::Browser.new timeout: 30
 CONTEXT = browser.contexts.create
 
 scheduler = Rufus::Scheduler.new
@@ -34,14 +28,14 @@ scheduler = Rufus::Scheduler.new
 BackgroundQueue = Localjob.new
 
 worker = Localjob::Worker.new BackgroundQueue, logger: LOGGER
-worker_thread = worker.work thread: true
+worker.work thread: true
 
 # worker_thread.thread_variable_set :context, CONTEXT
 # worker_thread.thread_variable_set :logger, LOGGER
 
 # Delete APP_DATABASE_URL from the environment, so it isn't accidently
 # passed to subprocesses.  APP_DATABASE_URL may contain passwords.
-DB = Sequel.connect ENV.delete('APP_DATABASE_URL') || ENV.delete('DATABASE_URL'), logger: LOGGER
+DB = Sequel.connect ENV.delete("APP_DATABASE_URL") || ENV.delete("DATABASE_URL"), logger: LOGGER
 
 DB.create_table? "scrape_configs" do
   primary_key :id
@@ -93,10 +87,9 @@ def schedule
   end
 end
 
-scheduler.every '1m' do
+scheduler.every "1m" do
   schedule
 end
-
 
 LOGGER.wait "Working ..."
 schedule
