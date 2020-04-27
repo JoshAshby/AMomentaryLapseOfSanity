@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "roda"
+
 require_relative "env"
 
 worker = Localjob::Worker.new BackgroundQueue, logger: LOGGER
@@ -14,15 +15,18 @@ end
 
 class App < Roda
   plugin :public
+
   plugin :json
   plugin :render
-  plugin :symbol_views
+
+  plugin :hash_routes
+
+  hash_routes do
+    view "", :index
+  end
 
   route do |r|
     r.public
-
-    r.root do
-      view :index
-    end
+    r.hash_routes ""
   end
 end
