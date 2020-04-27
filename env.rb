@@ -39,9 +39,11 @@ BROWSER_CONTEXT = browser.contexts.create
 
 BackgroundQueue = Localjob.new
 
-loader = Zeitwerk::Loader.new
-loader.log!
-%w[ models jobs routes ].each(&loader.method(:push_dir))
-loader.enable_reloading
+LOADER = Zeitwerk::Loader.new
+LOADER.log!
+# LOADER.push_dir __dir__
+# %w[ bin migrations public views ].each(&LOADER.method(:ignore))
+%w[ models jobs routes ].each(&LOADER.method(:push_dir))
+LOADER.enable_reloading
 
-loader.setup
+LOADER.setup
