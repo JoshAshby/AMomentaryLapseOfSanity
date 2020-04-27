@@ -1,6 +1,6 @@
 class Api < Roda
-  plugin :run_append_slash
   plugin :json
+  plugin :json_parser
 
   route do |r|
     r.root do
@@ -8,10 +8,24 @@ class Api < Roda
     end
 
     r.on "v1" do
-      r.get "scrape_configs" do
-        {
-          scrape_configs: ScrapeConfig.all.map(&:values)
-        }
+      r.on "scrape_configs" do
+        r.on String do |id|
+          r.get do
+            { scrape_config: ScrapeConfig[id].values }
+          end
+
+          r.post do
+            binding.irb
+          end
+        end
+
+        r.is do
+          r.get do
+            {
+              scrape_configs: ScrapeConfig.all.map(&:values)
+            }
+          end
+        end
       end
     end
   end

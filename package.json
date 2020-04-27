@@ -1,0 +1,29 @@
+{
+  "name": "AMomentaryLapseOfSanity",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:JoshAshby/AMomentaryLapseOfSanity.git",
+  "author": "JoshAshby <joshuaashby@joshashby.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev:views": "parcel watch frontend/layout.pcss frontend/views/index.* --out-dir public --no-hmr",
+    "dev:extension": "parcel watch frontend/extension/manifest.json --out-dir extension_dist --no-hmr"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4",
+    "postcss": "^7.0.27",
+    "postcss-modules": "^2.0.0",
+    "tailwindcss": "^1.3.5",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@bikeshaving/crank": "^0.1.1",
+    "@types/classnames": "^2.2.10",
+    "@types/firefox-webext-browser": "^70.0.1",
+    "classnames": "^2.2.6",
+    "glamor": "^2.20.40",
+    "parcel-plugin-web-extension": "^1.6.1",
+    "webextension-polyfill": "^0.6.0"
+  }
+}

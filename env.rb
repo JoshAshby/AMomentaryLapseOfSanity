@@ -2,17 +2,8 @@
 
 require "dotenv/load"
 
-require "tty-logger"
-
-require "zeitwerk"
-
-require "sequel/core"
-require "sequel/model"
-
-require "rufus-scheduler"
-require "localjob"
-
-require "ferrum"
+require "bundler"
+Bundler.require :default, ENV["RACK_ENV"].to_sym
 
 LOGGER = TTY::Logger.new do |config|
   config.level = ENV["RACK_ENV"] == "development" ? :debug : :warn
@@ -40,7 +31,7 @@ BROWSER_CONTEXT = browser.contexts.create
 BackgroundQueue = Localjob.new
 
 LOADER = Zeitwerk::Loader.new
-LOADER.log!
+# LOADER.log!
 # LOADER.push_dir __dir__
 # %w[ bin migrations public views ].each(&LOADER.method(:ignore))
 %w[ models jobs routes ].each(&LOADER.method(:push_dir))

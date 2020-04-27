@@ -4,14 +4,16 @@ source "https://rubygems.org"
 
 git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
-gem "dotenv", group: :development
+gem "dotenv", require: false
 
 gem "zeitwerk"
 
 gem "rake"
 gem "tty-logger"
 
+gem "thin"
 gem "roda"
+gem "tilt"
 
 gem "sequel"
 gem "sequel_pg", require: "sequel"

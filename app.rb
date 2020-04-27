@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "roda"
-
 require_relative "env"
 
 worker = Localjob::Worker.new BackgroundQueue, logger: LOGGER
@@ -14,7 +12,10 @@ worker.work thread: true
 # end
 
 class App < Roda
-  plugin :public
+  opts[:root] = __dir__
+
+  plugin :common_logger, $stdout
+  plugin :public, root: "public"
   plugin :render
 
   plugin :run_append_slash

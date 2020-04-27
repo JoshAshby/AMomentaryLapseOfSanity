@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "downlevelIteration": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": false,
+    "jsx": "react",
+    "typeRoots": ["node_modules/@types"],
+    "noEmitHelpers": false
+  },
+  "include": ["frontend"]
+}

@@ -9,3 +9,5 @@ Roda for the web interface and zeitwerk for autoloading.
 
 `thin start` (Don't use puma or unicorn because there are a lot of threads in
 this)
+
+`yarn dev`
