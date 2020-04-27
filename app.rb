@@ -15,14 +15,14 @@ end
 class App < Roda
   plugin :public
   plugin :json
+  plugin :render
+  plugin :symbol_views
 
   route do |r|
     r.public
 
     r.root do
-      {
-        v: 0.1
-      }
+      view :index
     end
   end
 end

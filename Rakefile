@@ -1,4 +1,6 @@
-MIGRATION_DIR = "migrations".freeze
+# frozen_string_literal: true
+
+MIGRATION_DIR = "migrations"
 
 migrate = lambda do |version|
   require_relative "env"
@@ -19,7 +21,7 @@ namespace :db do
   end
 
   desc "rollback version"
-  task :rollback do |_, args|
+  task :rollback do |_, _args|
     current_version = DB.fetch("SELECT * FROM schema_info").first[:version]
     migrate.call(current_version - 1)
   end
