@@ -17,6 +17,7 @@ class App < Roda
   plugin :common_logger, $stdout
   plugin :public, root: "public"
   plugin :render
+  plugin :content_for
 
   plugin :run_append_slash
 
