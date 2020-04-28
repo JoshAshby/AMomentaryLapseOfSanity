@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@bikeshaving/crank": "^0.1.1",
+    "@medv/finder": "^1.1.2",
     "@types/classnames": "^2.2.10",
     "@types/firefox-webext-browser": "^70.0.1",
     "classnames": "^2.2.6",
