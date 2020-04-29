@@ -11,12 +11,10 @@ class ScrapeAndExtractJob
     page = BROWSER_CONTEXT.create_page
     page.goto @scrape_config[:url]
 
-    extractions = {}
-
-    @scrape_config[:extraction_selectors].each do |selector|
+    extractions = @scrape_config[:extraction_selectors].each_with_object({}) do |selector, memo|
       result = page.at_css selector
       LOGGER.info "Extracted", selector: selector, text: result.inner_text
-      extractions[selector] = result.inner_text
+      memo[selector] = result.inner_text
     end
 
     # page.screenshot path: "tb.png"

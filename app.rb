@@ -5,11 +5,11 @@ require_relative "env"
 worker = Localjob::Worker.new BackgroundQueue, logger: LOGGER
 worker.work thread: true
 
-# Rufus::Scheduler.s.every "1m", first: :now do
-  # ScrapeConfig.select(:id).each do |row|
-    # BackgroundQueue << ScrapeAndExtractJob.new(row[:id])
-  # end
-# end
+Rufus::Scheduler.s.every "1m", first: :now do
+  ScrapeConfig.select(:id).each do |row|
+    BackgroundQueue << ScrapeAndExtractJob.new(row[:id])
+  end
+end
 
 class App < Roda
   opts[:root] = __dir__

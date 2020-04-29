@@ -12,6 +12,16 @@ class Api < Roda
     end
 
     r.on "v1" do
+      r.on "site" do
+        r.is do
+          r.get do
+            {
+              scrape_config: ScrapeConfig.find_or_create(url: r.params["url"]).values
+            }
+          end
+        end
+      end
+
       r.on "scrape_configs" do
         r.on String do |id|
           @scrape_config = ScrapeConfig[id]
