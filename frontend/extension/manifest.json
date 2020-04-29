@@ -12,7 +12,7 @@
     "128": "../assets/icons/hexagon_3.png"
   },
 
-  "permissions": ["<all_urls>", "*://*/*", "tabs", "clipboardWrite"],
+  "permissions": ["<all_urls>", "*://*/*", "activeTab", "clipboardWrite"],
 
   "browser_action": {
     "default_icon": "../assets/icons/hexagon.png",
@@ -31,5 +31,5 @@
     }
   ],
 
-  "web_accessible_resources": ["webAccessible/sidebar.html"]
+  "web_accessible_resources": ["./sidebar/*"]
 }

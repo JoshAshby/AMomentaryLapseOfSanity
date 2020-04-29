@@ -1,5 +1,3 @@
-import browser from "webextension-polyfill"
-
 browser.runtime.onInstalled.addListener(({ reason }) => {
   console.debug("Loaded extension", { reason })
 })

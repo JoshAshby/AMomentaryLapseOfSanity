@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["dom", "dom.iterable", "ES2020"],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "downlevelIteration": true,
     "allowJs": true,
     "esModuleInterop": true,
@@ -13,8 +13,7 @@
     "resolveJsonModule": true,
     "isolatedModules": false,
     "jsx": "react",
-    "typeRoots": ["node_modules/@types"],
-    "noEmitHelpers": false
+    "typeRoots": ["node_modules/@types"]
   },
   "include": ["frontend"]
 }

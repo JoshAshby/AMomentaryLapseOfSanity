@@ -1,27 +1,31 @@
 /** @jsx createElement */
-import { createElement, Context, Fragment } from "@bikeshaving/crank"
+import {
+  createElement,
+  Context,
+  Fragment,
+  Element,
+  Children,
+} from "@bikeshaving/crank"
+
+import { css, cx } from "emotion"
 
 /**
  * This file is a fairly similar copy, just using crankjs, of chrome-sidebar
  * from segmentio https://github.com/segmentio/chrome-sidebar
  */
 
-import classnames from "classnames"
-import { css } from "glamor"
-
-const maskClass = css({
-  // display: "none",
-  position: "fixed",
-  width: "100%",
-  height: "100%",
-  top: 0,
-  left: 0,
-  cursor: "pointer",
-  zIndex: "9999",
-  backgroundColor: "rgba(0, 0, 0, 0.39)",
-  transform: "translateY(100%)",
-  transition: "transform .30s cubic-bezier(0, 0, 0.3, 1)",
-})
+const maskClass = css`
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+  z-index: 9999;
+  background-color: rgba(0, 0, 0, 0.39);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0, 0, 0.3, 1);
+`
 
 const maskVisibleClass = css({
   // display: "block",
@@ -68,46 +72,54 @@ const iframeClass = css({
 })
 
 interface FrameProps {
-  url: string
+  children: Children
+  initializeOpen: boolean
 }
 
-function* Frame(this: Context, { url }: FrameProps) {
-  let isMinimized = false
+function* Frame(
+  this: Context,
+  { children, initializeOpen = false }: FrameProps
+) {
+  let isMinimized = !initializeOpen
 
-  const toggle = () => {
-    isMinimized = !isMinimized
+  const toggle = (minimized?: boolean) => {
+    if (minimized !== undefined) isMinimized = minimized
+    else isMinimized = !isMinimized
+
     console.log({ isMinimized })
+
     this.refresh()
   }
 
   // Is this the recommended way to handle things like opening and closing from
   // an external context, in crank?
-  this.addEventListener("frame.toggle", toggle)
+  this.addEventListener("frame.toggle", () => toggle())
 
   while (true) {
     yield (
       <Fragment>
         <div
-          className={classnames({
-            [maskClass.toString()]: true,
-            [maskVisibleClass.toString()]: !isMinimized,
+          className={cx({
+            [maskClass]: true,
+            [maskVisibleClass]: !isMinimized,
           })}
-          onclick={toggle}
+          onclick={() => toggle(true)}
         />
         <div
-          className={classnames({
-            [containerClass.toString()]: true,
-            [containerVisibleClass.toString()]: true,
-            [containerMinimizedClass.toString()]: isMinimized,
+          className={cx({
+            [containerClass]: true,
+            [containerVisibleClass]: true,
+            [containerMinimizedClass]: isMinimized,
           })}
-          onclick={toggle}
+          onclick={() => toggle(false)}
         >
-          <iframe
-            className={classnames({
-              [iframeClass.toString()]: true,
+          <div
+            className={cx({
+              [iframeClass]: true,
             })}
-            src={url}
-          />
+          >
+            {children}
+          </div>
         </div>
       </Fragment>
     )

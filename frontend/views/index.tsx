@@ -51,41 +51,46 @@ declare var FormDataEvent: {
 }
 
 function* ScrapeConfigForm(this: Context) {
-  this.addEventListener("submit", (event) => {
-    event.preventDefault()
+  const scrapeConfig = {
+    url: "",
+    extraction_selectors: [""],
+  }
 
-    const target = event.target as HTMLFormElement
-    new FormData(target)
-
-    target.reset()
-  })
-
-  this.addEventListener("formdata", (event) => {
-    const { formData } = event as FormDataEvent
-
-    const scrape_config: any = {
-      url: formData.get("url"),
-      extraction_selectors: formData
-        .get("extraction_selectors")
-        ?.toString()
-        .split(",")
-        .map((s) => s.trim()),
-    }
-
+  const create = async (formData: typeof scrapeConfig) =>
     fetch("/api/v1/scrape_configs", {
       method: "POST",
       headers: new Headers({
         "Content-Type": "application/json",
       }),
-      body: JSON.stringify(scrape_config),
+      body: JSON.stringify(formData),
     })
+
+  this.addEventListener("onchange", (event) => {
+    event.preventDefault()
+
+    console.log(event)
+  })
+
+  this.addEventListener("submit", (ev) => {
+    ev.preventDefault()
   })
 
   while (true) {
     yield (
-      <form>
-        <input required type="url" name="url" />
-        <input type="text" name="extraction_selectors" />
+      <form method="post">
+        <fieldset>
+          <label for="url">URL</label>
+          <input required type="url" name="url" value={scrapeConfig.url} />
+          <label for="extraction_selectors">CSS Selectors to Extract</label>
+          {scrapeConfig.extraction_selectors.map((selection, idx) => (
+            <input
+              type="text"
+              name={`extraction_selectors[${idx}]`}
+              value={selection}
+              crank-key={idx}
+            />
+          ))}
+        </fieldset>
 
         <input type="submit" />
       </form>
