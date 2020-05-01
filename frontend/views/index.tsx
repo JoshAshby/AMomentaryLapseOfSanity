@@ -12,7 +12,7 @@ async function* LoadingIndicator() {
 }
 
 async function ScrapeConfigTable(this: Context) {
-  const res = await fetch("/api/v1/scrape_configs")
+  const res = await fetch("/api/v1/scrape_config")
   const data = await res.json()
 
   return (
@@ -57,7 +57,7 @@ function* ScrapeConfigForm(this: Context) {
   }
 
   const create = async (formData: typeof scrapeConfig) =>
-    fetch("/api/v1/scrape_configs", {
+    fetch("/api/v1/scrape_config", {
       method: "POST",
       headers: new Headers({
         "Content-Type": "application/json",
