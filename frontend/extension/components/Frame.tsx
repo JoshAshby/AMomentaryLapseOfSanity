@@ -66,6 +66,7 @@ const iframeClass = `
   background: white;
   border-radius: 8px;
   box-shadow: -1px 1px 8px rgba(0,0,0,.15);
+  overflow: scroll;
 `
 
 interface FrameProps {

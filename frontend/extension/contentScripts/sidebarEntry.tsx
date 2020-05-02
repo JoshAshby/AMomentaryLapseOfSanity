@@ -8,103 +8,174 @@ import Frame from "../components/Frame"
 
 import browser from "webextension-polyfill"
 
-function ErrorBoundary({ children }: { children?: Children }) {
-  try {
-    return <Fragment>{children}</Fragment>
-  } catch (e) {
-    return <p>{e.message}</p>
-  }
+interface CannedRequestOpts extends RequestInit {
+  querystring?: Record<string, any>
+  json?: any
 }
 
-async function* SiteScrapeConfig(this: Context) {
-  let scrape_config: any
+interface CannedRequest {
+  <T = any>(path: string, {}: CannedRequestOpts): Promise<T>
+}
 
-  const load = async () => {
-    const res = await fetch(
-      `http://localhost:3000/api/v1/site?url=${window.location.href}`,
-      {
-        headers: new Headers({
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        }),
-      }
+const baseUrl = "http://localhost:3000/"
+const request: CannedRequest = async (
+  path,
+  { querystring, json, body, headers, ...requestInit } = { method: "GET" }
+) => {
+  const url = new URL(path, baseUrl)
+
+  if (querystring)
+    Object.entries(querystring).forEach(([key, value]) =>
+      url.searchParams.append(key, value)
     )
 
-    const json = await res.json()
-    scrape_config = json["scrape_config"]
+  let stringBody = body
+  if (json) stringBody = JSON.stringify(json)
 
-    this.set("scrape_config", scrape_config)
+  const res = await fetch(url.href, {
+    ...requestInit,
+    headers: {
+      ...headers,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: stringBody,
+  })
 
-    this.refresh()
+  return res.json()
+}
+
+interface ScrapeConfig {
+  id: string
+  url: string
+  extraction_selectors: string[]
+  updated_at: string
+  created_at: string
+}
+
+const loadForUrl = async (url: string) =>
+  await request<{ scrape_config: ScrapeConfig }>(`/api/v1/site`, {
+    querystring: { url },
+  })
+
+const addSelector = async (
+  id: ScrapeConfig["id"],
+  selector: ScrapeConfig["extraction_selectors"][0]
+) =>
+  await request<{ scrape_config: ScrapeConfig }>(
+    `/api/v1/scrape_config/${id}/extraction`,
+    {
+      method: "PATCH",
+      json: {
+        extraction_selector: selector,
+      },
+    }
+  )
+
+const removeSelector = async (id: ScrapeConfig["id"], idx: number) =>
+  await request<{ scrape_config: ScrapeConfig }>(
+    `/api/v1/scrape_config/${id}/extraction/${idx}`,
+    {
+      method: "DELETE",
+    }
+  )
+
+const selectorsForHover = () => {
+  const hovered = Array.from(document.querySelectorAll(":hover"))
+    .filter((node) => !frame!.contains(node))
+    .reverse()
+
+  return hovered.reduce((memo, node) => ({ ...memo, [finder(node)]: node }), {})
+}
+
+function createAction<T, U = T>(
+  type: string,
+  handlerLogic?: (args: T, context: Context) => void,
+  dataTransformer?: (args: U) => T
+) {
+  const dataFunc = dataTransformer || ((a: U) => (a as unknown) as T)
+
+  const creator = (...args: Parameters<typeof dataFunc>) =>
+    new CustomEvent(type, {
+      bubbles: true,
+      detail: { data: dataFunc(...args), creator },
+    })
+
+  creator.type = type
+
+  function handler(this: Context, event: Event) {
+    const ev = event as ReturnType<typeof creator>
+    if (!ev.detail) return
+
+    handlerLogic?.(ev.detail.data, this)
   }
 
-  const remove = (id: number, idx: number) => async (ev: MouseEvent) => {
-    ev.preventDefault()
-    ev.stopPropagation()
+  creator.handler = handler
 
-    await fetch(
-      `http://localhost:3000/api/v1/scrape_config/${id}/extraction/${idx}`,
-      {
-        method: "DELETE",
-        headers: new Headers({
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        }),
-      }
-    )
+  return creator
+}
 
-    await load()
-  }
+const ScrapeConfig = {
+  addSelector: createAction(
+    "scrape_config.add_selector",
+    async ({ id, selector }, context) => {
+      await addSelector(id, selector)
 
-  this.addEventListener("scrape_config.reload", load)
+      context.refresh()
+    },
+    ({
+      scrape_config,
+      selector,
+    }: {
+      scrape_config: ScrapeConfig
+      selector: ScrapeConfig["extraction_selectors"][0]
+    }) => ({ id: scrape_config.id, selector })
+  ),
+  removeSelector: createAction(
+    "scrape_config.remove_selector",
+    async ({ id, idx }, context) => {
+      await removeSelector(id, idx)
 
-  await load()
+      context.refresh()
+    },
+    ({ scrape_config, idx }: { scrape_config: ScrapeConfig; idx: number }) => ({
+      id: scrape_config.id,
+      idx,
+    })
+  ),
+}
 
-  for await ({} of this) {
-    yield (
-      <Fragment>
-        <strong>ID:</strong> {scrape_config.id}
-        <table style="width: 100%;">
-          <thead>
-            <tr>
-              <th style="width: 45%;">Selection</th>
-              <th style="width: 45%;">Content</th>
-              <th style="width: 10%;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {scrape_config.extraction_selectors.map(
-              (selector: string, idx: number) => {
-                const node = document.querySelector(selector) as HTMLElement
+const Selection = {
+  start: createAction("selection.start"),
+}
 
-                return (
-                  <SelectorRow selector={selector} node={node} crank-key={idx}>
-                    <button onclick={remove(scrape_config.id, idx)}>-</button>
-                  </SelectorRow>
-                )
-              }
-            )}
-          </tbody>
-        </table>
-        <Selector scrape_config={scrape_config} />
-      </Fragment>
-    )
-  }
+function SelectorTable({ children }: { children: Children }) {
+  return (
+    <table style="width: 100%;">
+      <thead>
+        <tr>
+          <th style="width: 45%;">Selection</th>
+          <th style="width: 45%;">Content</th>
+          <th style="width: 10%;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>{children}</tbody>
+    </table>
+  )
 }
 
 function SelectorRow({
   selector,
   node,
   children,
+  ...props
 }: {
   selector: string
   node: HTMLElement
   children?: Children
 }) {
-  const outline = () => {}
-
   return (
-    <tr onmouseenter={outline} onmouseleave={outline}>
+    <tr {...props}>
       <td>{selector}</td>
       <td>{node.innerText.substring(0, 80)}</td>
       <td>{children}</td>
@@ -112,88 +183,118 @@ function SelectorRow({
   )
 }
 
+function* StartSelectingButton(this: Context) {
+  this.addEventListener("click", (ev) => {
+    ev.preventDefault()
+    ev.stopPropagation()
+
+    this.dispatchEvent(Selection.start({}))
+  })
+
+  while (true) {
+    yield <button>Add Extraction</button>
+  }
+}
+
+function* AddButton(
+  this: Context,
+  {
+    scrape_config,
+    selector,
+  }: {
+    scrape_config: ScrapeConfig
+    selector: ScrapeConfig["extraction_selectors"][0]
+  }
+) {
+  this.addEventListener("click", (ev) => {
+    ev.preventDefault()
+    ev.stopPropagation()
+
+    this.dispatchEvent(ScrapeConfig.addSelector({ scrape_config, selector }))
+  })
+
+  for ({ scrape_config, selector } of this) {
+    yield <button>+</button>
+  }
+}
+
+function* RemoveButton(
+  this: Context,
+  { scrape_config, idx }: { scrape_config: ScrapeConfig; idx: number }
+) {
+  this.addEventListener("click", (ev) => {
+    ev.preventDefault()
+    ev.stopPropagation()
+
+    this.dispatchEvent(ScrapeConfig.removeSelector({ scrape_config, idx }))
+  })
+
+  for ({ scrape_config, idx } of this) {
+    yield <button>-</button>
+  }
+}
+
 function* Selector(this: Context, { scrape_config }: { scrape_config: any }) {
   let selectors: Record<string, HTMLElement> = {}
 
-  const findSelectors = (event: MouseEvent) => {
-    if (frame!.contains(event.target as HTMLElement)) return
+  const setSelectors = (ev: MouseEvent) => {
+    if (frame?.contains(ev.target as HTMLElement)) return
 
-    event.preventDefault()
-    event.stopPropagation()
-    document.removeEventListener("click", findSelectors)
+    ev.preventDefault()
+    ev.stopPropagation()
+    document.removeEventListener("click", setSelectors)
 
-    const hovered = Array.from(document.querySelectorAll(":hover"))
-      .filter((node) => !frame!.contains(node))
-      .reverse()
-
-    selectors = hovered.reduce(
-      (memo, node) => ({ ...memo, [finder(node)]: node }),
-      {}
-    )
-
-    toggleFrame()
+    selectors = selectorsForHover()
 
     this.refresh()
-  }
-
-  const startSelecting = (e: Event) => {
-    e.preventDefault()
-    e.stopPropagation()
-
     toggleFrame()
-
-    document.addEventListener("click", findSelectors)
   }
 
-  const add = (id: number, selector: string, sc: any) => async (
-    ev: MouseEvent
-  ) => {
-    await fetch(`http://localhost:3000/api/v1/scrape_config/${id}`, {
-      method: "PATCH",
-      headers: new Headers({
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      }),
-      body: JSON.stringify({
-        extraction_selectors: [
-          ...this.get("scrape_config").extraction_selectors,
-          selector,
-        ],
-      }),
-    })
-
-    this.dispatchEvent(
-      new CustomEvent("scrape_config.reload", { bubbles: true })
-    )
-  }
-
-  // document.addEventListener("selector.start", startSelecting)
+  this.addEventListener(Selection.start.type, (event) => {
+    toggleFrame()
+    document.addEventListener("click", setSelectors)
+  })
 
   while (true) {
     yield (
       <Fragment>
-        <button onclick={startSelecting}>Add Extraction</button>
+        <StartSelectingButton />
 
-        <table style="width: 100%;">
-          <thead>
-            <tr>
-              <th style="width: 45%;">Selection</th>
-              <th style="width: 45%;">Content</th>
-              <th style="width: 10%;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(selectors).map(([selector, node], idx) => (
+        <SelectorTable>
+          {Object.entries(selectors).map(([selector, node], idx) => (
+            <SelectorRow selector={selector} node={node} crank-key={idx}>
+              <AddButton scrape_config={scrape_config} selector={selector} />
+            </SelectorRow>
+          ))}
+        </SelectorTable>
+      </Fragment>
+    )
+  }
+}
+
+async function* SiteScrapeConfig(this: Context) {
+  for (const ac of Object.values(ScrapeConfig)) {
+    this.addEventListener(ac.type, ac.handler)
+  }
+
+  for await ({} of this) {
+    let { scrape_config } = await loadForUrl(window.location.href)
+
+    yield (
+      <Fragment>
+        <strong>ID:</strong> {scrape_config.id}
+        <SelectorTable>
+          {scrape_config.extraction_selectors.map((selector, idx) => {
+            const node = document.querySelector(selector) as HTMLElement
+
+            return (
               <SelectorRow selector={selector} node={node} crank-key={idx}>
-                <button
-                  onclick={add(scrape_config.id, selector, scrape_config)}
-                >
-                  +
-                </button>
+                <RemoveButton scrape_config={scrape_config} idx={idx} />
               </SelectorRow>
-            ))}
-          </tbody>
-        </table>
+            )
+          })}
+        </SelectorTable>
+        <Selector scrape_config={scrape_config} />
       </Fragment>
     )
   }
@@ -214,11 +315,9 @@ const toggleFrame = () => {
 
   Promise.resolve(
     renderer.render(
-      <ErrorBoundary>
-        <Frame initializeOpen>
-          <SiteScrapeConfig />
-        </Frame>
-      </ErrorBoundary>,
+      <Frame initializeOpen>
+        <SiteScrapeConfig />
+      </Frame>,
       root
     )
   ).then((f) => (frame = f.firstElementChild!))
