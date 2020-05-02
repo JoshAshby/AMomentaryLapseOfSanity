@@ -33,6 +33,13 @@ class Api < Roda
                 { scrape_config: @scrape_config.values }
               end
             end
+
+            r.patch do
+              @scrape_config.extraction_selectors << r.params["extraction_selector"]
+              @scrape_config.save
+
+              { scrape_config: @scrape_config.values }
+            end
           end
 
           r.get do
