@@ -1,6 +1,14 @@
 # frozen_string_literal: true
 
 class ScrapeAndExtractJob
+  class Scheduler
+    def self.call job, time
+      ScrapeConfig.where(active: true).select(:id).each do |row|
+        BackgroundQueue << ScrapeAndExtractJob.new(row[:id])
+      end
+    end
+  end
+
   def initialize scrape_config_id
     @scrape_config = ScrapeConfig[scrape_config_id]
   end

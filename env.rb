@@ -16,6 +16,8 @@ DB = Sequel.connect ENV.delete("DATABASE_URL"), logger: LOGGER
 Sequel.extension :core_refinements, :pg_array_ops, :pg_json_ops
 Sequel::Model.db.extension :pg_array, :pg_json
 
+Sequel::Model.plugin :timestamps, update_on_create: true
+
 Sequel::Model.cache_associations = false if ENV["RACK_ENV"] == "development"
 
 # Sequel::Model.plugin :auto_validations

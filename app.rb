@@ -5,11 +5,7 @@ require_relative "env"
 worker = Localjob::Worker.new BackgroundQueue, logger: LOGGER
 worker.work thread: true
 
-Rufus::Scheduler.s.every "1m", first: :now do
-  ScrapeConfig.select(:id).each do |row|
-    BackgroundQueue << ScrapeAndExtractJob.new(row[:id])
-  end
-end
+Rufus::Scheduler.s.every "1m", ScrapeAndExtractJob::Scheduler, first: :now
 
 class App < Roda
   opts[:root] = __dir__
@@ -25,13 +21,14 @@ class App < Roda
 
   # wrapped like this so that Zeitwerk will reload the class
   run "api", ->(env) { Api.call env }
+  run "app", ->(env) { WebApp.call env }
 
   route do |r|
     r.public
     r.multi_run
 
     r.root do
-      view :index
+      r.redirect "/app"
     end
   end
 end
