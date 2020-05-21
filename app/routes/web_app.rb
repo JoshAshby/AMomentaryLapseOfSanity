@@ -1,10 +1,24 @@
 using Sequel::CoreRefinements
 
+module HTMXBoostRender
+  module InstanceMethods
+    def htmx_render(*args, &block)
+      if request.headers["X-HX-Request"] == "true"
+        render(*args, &block)
+      else
+        view(*args, &block)
+      end
+    end
+  end
+end
+
 class WebApp < Roda
   plugin :request_headers
 
   plugin :render, views: "app/views"
   plugin :content_for
+
+  plugin HTMXBoostRender
 
   route do |r|
     r.on "scrape_config" do
@@ -20,7 +34,7 @@ class WebApp < Roda
         end
 
         r.get do
-          view "scrape_configs/edit"
+          htmx_render "scrape_configs/edit"
         end
 
         r.post do
@@ -31,7 +45,7 @@ class WebApp < Roda
       end
 
       r.get "new" do
-        view "scrape_configs/new"
+        htmx_render "scrape_configs/new"
       end
 
       r.post do
@@ -43,7 +57,7 @@ class WebApp < Roda
 
     r.root do
       @scrape_configs = ScrapeConfig.all
-      view :index
+      htmx_render :index
     end
   end
 end

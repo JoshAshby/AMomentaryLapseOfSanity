@@ -1,4 +1,3 @@
-
 <span style="display: flex; justify-content: space-between; align-items: baseline;">
   <h3>Scrape Configs</h3>
 
@@ -16,7 +15,7 @@
   </thead>
   <tbody>
     <% @scrape_configs.each do |scrape_config| %>
-      <tr hx-target="this" hx-swap="outerHTML" id="site-config-<%= scrape_config.id %>">
+      <tr>
         <td>
           <%= scrape_config.url %>
         </td>

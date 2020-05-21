@@ -1,0 +1,30 @@
+<script>
+function addButton() {
+  return {
+    add(ev) {
+      ev.preventDefault()
+      const { $el } = this
+
+      const clone = $el.parentNode.querySelector("span").cloneNode(true)
+      clone.querySelector("input").value = ""
+
+      $el.parentNode.insertBefore(clone, $el)
+    }
+  }
+}
+
+function removeButton() {
+  return {
+    remove(ev) {
+      ev.preventDefault()
+      const { $el } = this
+
+      // Prevent removing the last input and clear it instead so we can still clone
+      if ($el.parentNode.querySelectorAll("span").length != 1)
+        $el.remove()
+      else
+        $el.querySelector("input").value = ""
+    }
+  }
+}
+</script>

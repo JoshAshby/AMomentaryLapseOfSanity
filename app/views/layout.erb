@@ -30,6 +30,8 @@
       </header>
     </nav>
 
-    <%= yield %>
+    <div hx-boost="true" hx-target="this">
+      <%= yield %>
+    </div>
   </body>
 </html>

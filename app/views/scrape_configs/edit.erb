@@ -1,29 +1,4 @@
-<% content_for :head do %>
-  <script>
-  function addButton() {
-    return {
-      add(ev) {
-        ev.preventDefault()
-        const $el = this.$el
-
-        const clone = $el.parentNode.querySelector("span").cloneNode(true)
-        clone.querySelector("input").value = ""
-
-        $el.parentNode.insertBefore(clone, $el)
-      }
-    }
-  }
-
-  function removeButton() {
-    return {
-      remove(ev) {
-        ev.preventDefault()
-        this.$el.remove()
-      }
-    }
-  }
-  </script>
-<% end %>
+<%= render "scrape_configs/_button_scripts" %>
 
 <h3>Editing Scrape Config <%= @scrape_config.id %></h3>
 
