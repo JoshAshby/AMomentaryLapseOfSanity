@@ -1,11 +1,7 @@
-require_relative "app"
-# Allows overriding HTTP request using `_method` params
-# eg _method="delete"
-# use Rack::MethodOverride
+require_relative "env"
+require_relative "app/scheduler"
 
-# run App.freeze.app
-
-if ENV['RACK_ENV'] == 'production'
+if ENV["RACK_ENV"] == "production"
   Zeitwerk::Loader.eager_load_all
   run App.freeze.app
 else

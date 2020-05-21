@@ -1,0 +1,56 @@
+<% content_for :head do %>
+  <script>
+  function addButton() {
+    return {
+      add(ev) {
+        ev.preventDefault()
+        const $el = this.$el
+
+        const clone = $el.parentNode.querySelector("span").cloneNode(true)
+        clone.querySelector("input").value = ""
+
+        $el.parentNode.insertBefore(clone, $el)
+      }
+    }
+  }
+
+  function removeButton() {
+    return {
+      remove(ev) {
+        ev.preventDefault()
+        this.$el.remove()
+      }
+    }
+  }
+  </script>
+<% end %>
+
+<h3>Creating a New Scrape Config</h3>
+
+<form action="/scrape_config" method="post">
+  <fieldset>
+    <legend>Basics</legend>
+    <input type="text" name="url" value="" />
+
+    <input type="hidden" name="active" value="false" />
+    <label for="active">
+      <input type="checkbox" name="active">
+      Active?
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Extractions</legend>
+    <span style="display: flex" x-data="removeButton()">
+      <input type="text" name="extraction_selectors[]" value="" />
+      <button @click="remove">X</button>
+    </span>
+
+    <button x-data="addButton()" @click="add">Add</button>
+  </fieldset>
+
+  <span style="display: flex; justify-content: space-between; align-items: baseline;">
+    <a href="/">Cancel</a>
+    <button type="submit">Create</button>
+  </span>
+</form>

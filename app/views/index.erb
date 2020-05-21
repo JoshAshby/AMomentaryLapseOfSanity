@@ -1,0 +1,35 @@
+
+<span style="display: flex; justify-content: space-between; align-items: baseline;">
+  <h3>Scrape Configs</h3>
+
+  <a href="/scrape_config/new">New</a>
+</span>
+
+<table>
+  <thead>
+    <tr>
+      <th>Site URL</th>
+      <th># of Extracts</th>
+      <th>Active?</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @scrape_configs.each do |scrape_config| %>
+      <tr hx-target="this" hx-swap="outerHTML" id="site-config-<%= scrape_config.id %>">
+        <td>
+          <%= scrape_config.url %>
+        </td>
+        <td>
+          <%= scrape_config.extraction_selectors.length %>
+        </td>
+        <td>
+          <%= "IN" unless scrape_config.active %>ACTIVE
+        </td>
+        <td>
+          <a href="/scrape_config/<%= scrape_config.id %>">Edit</a>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

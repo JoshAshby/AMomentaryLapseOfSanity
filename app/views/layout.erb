@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+    <title>A Momentary Lapse of Sanity</title>
+
+    <link rel="stylesheet" href="/dark.min.css" />
+
+    <script src="/alpine.js"></script>
+
+    <script src="/htmx.min.js"></script>
+    <script>
+      htmx.logAll()
+    </script>
+
+    <%= content_for :head %>
+  </head>
+
+  <body>
+    <nav>
+      <header>
+        <h1>
+          <a href="/">
+            <img src="/icons/hexagon.svg">
+            A Momentary Lapse of Sanity
+          </a>
+        </h1>
+      </header>
+    </nav>
+
+    <%= yield %>
+  </body>
+</html>
