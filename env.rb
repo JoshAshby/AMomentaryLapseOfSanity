@@ -44,7 +44,7 @@ LOADER = Zeitwerk::Loader.new
 # LOADER.log!
 # LOADER.push_dir __dir__
 # %w[ bin migrations public views ].each(&LOADER.method(:ignore))
-%w[ app app/models app/jobs app/routes ].each(&LOADER.method(:push_dir))
+%w[ lib app app/models app/jobs app/routes ].each(&LOADER.method(:push_dir))
 LOADER.enable_reloading
 
 LOADER.setup

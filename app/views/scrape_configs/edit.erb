@@ -1,6 +1,12 @@
-<%= render "scrape_configs/_button_scripts" %>
+<% content_for :head do %>
+  <%= render "scrape_configs/_button_scripts" %>
+<% end %>
 
-<h3>Editing Scrape Config <%= @scrape_config.id %></h3>
+<span style="display: flex; justify-content: space-between; align-items: baseline;">
+  <h3>Editing Scrape Config <%= @scrape_config.id %></h3>
+
+  <button hx-post="/scrape_config/<%= @scrape_config.id %>/delete" hx-confirm="Are you sure?" hx-target="body">Delete</button>
+</span>
 
 <form action="/scrape_config/<%= @scrape_config.id %>" method="post">
   <fieldset>
@@ -16,6 +22,13 @@
 
   <fieldset>
     <legend>Extractions</legend>
+    <% if @scrape_config.extraction_selectors.empty? %>
+      <span style="display: flex" x-data="removeButton()">
+        <input type="text" name="extraction_selectors[]" value="" />
+        <button @click="remove">X</button>
+      </span>
+    <% end %>
+
     <% @scrape_config.extraction_selectors.each_with_index do |selector, idx| %>
       <span style="display: flex" x-data="removeButton()">
         <input type="text" name="extraction_selectors[]" value="<%= selector %>" />
