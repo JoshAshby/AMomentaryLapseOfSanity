@@ -6,9 +6,10 @@ class WebApp < Roda
   plugin :render, views: "app/views"
   plugin :content_for
 
-  plugin HTMXBooster
-
   route do |r|
+    # Helps HTMX on redirects by always pushing the current URL to history
+    response.headers["X-HX-Push"] = r.path
+
     r.on "scrape_config" do
       r.on Integer do |id|
         @scrape_config = ScrapeConfig[id]
@@ -17,10 +18,7 @@ class WebApp < Roda
           @scrape_config.scrape_result.each(&:delete)
           @scrape_config.delete
 
-          htmx_redirect "/" do
-            @scrape_configs = ScrapeConfig.all
-            view :index
-          end
+          r.redirect "/"
         end
 
         r.get do
@@ -30,10 +28,7 @@ class WebApp < Roda
         r.post do
           @scrape_config.update r.params
 
-          htmx_redirect "/" do
-            @scrape_configs = ScrapeConfig.all
-            view :index
-          end
+          r.redirect "/"
         end
       end
 
@@ -44,9 +39,7 @@ class WebApp < Roda
       r.post do
         @scrape_config = ScrapeConfig.create r.params
 
-        htmx_redirect "/scrape_config/#{ @scrape_config.id }" do
-          view "scrape_configs/edit"
-        end
+        r.redirect "/scrape_config/#{ @scrape_config.id }"
       end
     end
 

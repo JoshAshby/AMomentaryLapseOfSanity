@@ -12,6 +12,23 @@
     <script src="/htmx.min.js"></script>
     <script>
       htmx.logAll()
+
+      // Load script tags properly to ensure that pages can have their own little things running
+      // This is similar to turbolinks handling, and it requires all JS to be idempotent. If a global
+      // on the window or document object is created in one page, it'll be available for all pages
+      // loaded through htmx until a full browser refresh.
+      //
+      // Note: This does seem to require that the scripts be inside the body, as HTMX doesn't seem to touch
+      // the head during loading of a page
+      htmx.onLoad(function(target) {
+        if (target.nodeName !== "SCRIPT")
+          return
+
+        const newScript = document.createElement("script")
+        const inlineScript = document.createTextNode(target.innerText)
+        newScript.appendChild(inlineScript)
+        document.body.appendChild(newScript)
+      })
     </script>
 
     <%= content_for :head %>
