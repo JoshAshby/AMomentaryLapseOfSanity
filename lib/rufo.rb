@@ -1,40 +1,50 @@
+# frozen_string_literal: true
+
 class Rufo
-  def self.schedule &block
-    @schedule ||= block
-  end
+  class << self
+    attr_reader :instance
 
-  def self.start
-    instance = new
+    def start &block
+      @instance = block.call.new
+      @instance.start
 
-    LOADER.after_reload do
-      instance.reload!
+      LOADER.after_reload do
+        @instance.stop
+        @instance = nil
+
+        @instance = block.call.new
+        @instance.start
+      end
     end
 
-    instance.start
+    def schedule &block
+      @schedule ||= block
+    end
   end
 
-  def block_for name
-    ->() { Object.const_get(name).call }
+  def initialize
+    @scheduler = Rufus::Scheduler.new
   end
 
   def start
-    Rufus::Scheduler.s.tap do |s|
-      LOGGER.wait "Seting schedules"
-      instance_exec s, &self.class.instance_variable_get(:@schedule)
-      LOGGER.success "Set schedules"
-    end
+    LOGGER.wait "Seting schedules"
+    instance_exec @scheduler, &self.class.instance_variable_get(:@schedule)
+    LOGGER.success "Set schedules"
+  end
+
+  def stop
+    @scheduler.shutdown
+    @scheduler = nil
   end
 
   def reload!
-    Rufus::Scheduler.s.tap do |s|
-      LOGGER.wait "Reseting schedules for reload"
-      s.pause
+    LOGGER.wait "Reseting schedules for reload"
+    @scheduler.pause
 
-      s.jobs.each(&:unschedule)
-      instance_exec s, &self.class.instance_variable_get(:@schedule)
+    @scheduler.jobs.each(&:unschedule)
+    instance_exec @scheduler, &self.class.instance_variable_get(:@schedule)
 
-      s.resume
-      LOGGER.success "Reset schedules for reload"
-    end
+    @scheduler.resume
+    LOGGER.success "Reset schedules for reload"
   end
 end

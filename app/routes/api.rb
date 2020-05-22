@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 using Sequel::CoreRefinements
 
-class Api < Roda
+class Routes::Api < Roda
   plugin :all_verbs
 
   plugin :json

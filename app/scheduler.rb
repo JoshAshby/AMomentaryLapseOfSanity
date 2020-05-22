@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class Scheduler < Rufo
   schedule do |s|
-    s.every "1m", first: :now, &block_for("ScrapeAndExtractJob::Scheduler")
+    s.every "1m", ScrapeAndExtractJob::Scheduler, first: :now
   end
 end

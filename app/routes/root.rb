@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-class App < Roda
-  opts[:root] = __dir__
-
+class Routes::Root < Roda
   plugin :common_logger, $stdout
-  plugin :public, root: "../public"
+  plugin :public
 
   plugin :run_append_slash
 
@@ -12,9 +10,9 @@ class App < Roda
     r.public
 
     r.on "api" do
-      r.run Api
+      r.run Routes::Api
     end
 
-    r.run WebApp
+    r.run Routes::WebApp
   end
 end

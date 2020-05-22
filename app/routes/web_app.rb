@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 using Sequel::CoreRefinements
 
-class WebApp < Roda
+class Routes::WebApp < Roda
   plugin :request_headers
 
   plugin :render, views: "app/views"
