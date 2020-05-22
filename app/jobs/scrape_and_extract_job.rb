@@ -29,8 +29,6 @@ class ScrapeAndExtractJob
       memo[selector] = result.inner_text
     end
 
-    # page.screenshot path: "tb.png"
-
     page.close
 
     ScrapeResult.create scrape_config: @scrape_config, extractions: extractions

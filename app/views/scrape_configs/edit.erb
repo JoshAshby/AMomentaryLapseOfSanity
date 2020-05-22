@@ -9,6 +9,7 @@
 <form action="/scrape_config/<%= @scrape_config.id %>" method="post">
   <fieldset>
     <legend>Basics</legend>
+    <label for="url">URL</label>
     <input type="text" name="url" value="<%= @scrape_config.url %>" />
 
     <input type="hidden" name="active" value="false" />
