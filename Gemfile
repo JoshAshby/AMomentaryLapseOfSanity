@@ -24,6 +24,8 @@ gem "localjob"
 gem "ferrum"
 
 group :development do
+  gem "listen"
+
   gem "rubocop"
 
   gem "sequel-annotate"

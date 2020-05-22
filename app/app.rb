@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "../env"
-
 class App < Roda
   opts[:root] = __dir__
 

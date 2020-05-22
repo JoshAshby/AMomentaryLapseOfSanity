@@ -40,11 +40,55 @@ Thread.abort_on_exception = true
 trap 'INT' do exit end
 trap 'TERM' do exit end
 
-LOADER = Zeitwerk::Loader.new
-# LOADER.log!
-# LOADER.push_dir __dir__
-# %w[ bin migrations public views ].each(&LOADER.method(:ignore))
-%w[ lib app app/models app/jobs app/routes ].each(&LOADER.method(:push_dir))
-LOADER.enable_reloading
+class Reloader
+  def initialize folders
+    @folders = folders
 
-LOADER.setup
+    @loader = Zeitwerk::Loader.new
+
+    @after_reload = []
+
+    @lock = Mutex.new
+
+    @folders.each(&@loader.method(:push_dir))
+  end
+
+  def start
+    setup_listener if ENV["RACK_ENV"] == "development"
+
+    @loader.setup
+
+    notify_after_reload
+  end
+
+  def after_reload &block
+    @after_reload << block
+    block
+  end
+
+  def reload!
+    return unless @loader.reloading_enabled?
+
+    @lock.synchronize do
+      @loader.reload
+      notify_after_reload
+    end
+  end
+
+  protected
+
+  def setup_listener
+    @loader.enable_reloading
+
+    Listen.to(*@folders, wait_for_delay: 1) do
+      reload!
+    end.start
+  end
+
+  def notify_after_reload
+    @after_reload.each(&:call)
+  end
+end
+
+LOADER = Reloader.new %w[ lib app app/models app/jobs app/routes ]
+LOADER.start

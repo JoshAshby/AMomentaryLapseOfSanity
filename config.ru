@@ -5,8 +5,5 @@ if ENV["RACK_ENV"] == "production"
   Zeitwerk::Loader.eager_load_all
   run App.freeze.app
 else
-  run ->(env) {
-    LOADER.reload
-    App.call env
-  }
+  run ->(env) { App.call env }
 end

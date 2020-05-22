@@ -2,10 +2,14 @@
 
 class ScrapeAndExtractJob
   class Scheduler
-    def self.call job, time
-      ScrapeConfig.where(active: true).select(:id).each do |row|
+    def self.call
+      LOGGER.wait "Looking for active ScrapeConfigs"
+
+      scrape_configs = ScrapeConfig.where(active: true).select(:id).each do |row|
         BackgroundQueue << ScrapeAndExtractJob.new(row[:id])
       end
+
+      LOGGER.success "Scheduled #{ scrape_configs.count } ScrapeConfigs"
     end
   end
 
