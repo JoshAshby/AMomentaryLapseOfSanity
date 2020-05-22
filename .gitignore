@@ -14,13 +14,12 @@
 !/tmp/.keep
 
 # Compiled things
-/.cache
-/public
-/extension_dist
 /.yardoc
 
 /.env*
 
-/node_modules
-yarn-debug.log*
-yarn-error.log
+/browser-extension/.cache
+/browser-extension/node_modules
+/browser-extension/dist
+/browser-extension/yarn-debug.log*
+/browser-extension/yarn-error.log
