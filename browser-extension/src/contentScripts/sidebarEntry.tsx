@@ -26,29 +26,6 @@ const injectFrame = async () => {
   const frameContainer = await Promise.resolve(
     renderer.render(
       <Frame>
-        <div
-          id="amlos_draghandle"
-          draggable="true"
-          ondragstart="event.dataTransfer.setData('text/plain', null)"
-          style="height: 6px; background: gray; mix-blend-mode: difference; display: flex; justify-content: center; cursor: ns-resize;"
-        >
-          <svg
-            style="position: relative; top: -9px; pointer-events: none;"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="1"></circle>
-            <circle cx="19" cy="12" r="1"></circle>
-            <circle cx="5" cy="12" r="1"></circle>
-          </svg>
-        </div>
         <iframe style={iframeStyle} />
       </Frame>,
       root
@@ -59,27 +36,6 @@ const injectFrame = async () => {
 
   let { clientHeight: height } = frame
   document.body.style.marginBottom = `${height}px`
-
-  const dragHandle = document.getElementById("amlos_draghandle")
-
-  const mouseMove = (ev: MouseEvent) => {
-    console.debug(ev)
-  }
-
-  dragHandle.addEventListener("mousedown", () => {
-    document.addEventListener("mousemove", mouseMove)
-  })
-
-  dragHandle.addEventListener("mouseup", () => {
-    document.removeEventListener("mousemove", mouseMove)
-  })
-
-  dragHandle.addEventListener("dragstart", () => false)
-
-  window.addEventListener("resize", () => {
-    const { clientHeight: height } = frame
-    document.body.style.marginBottom = `${height}px`
-  })
 
   populateFrame(frame)
 }
