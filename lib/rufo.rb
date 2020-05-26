@@ -1,50 +1,50 @@
-# frozen_string_literal: true
+module Rufo
+  def self.configure app
+    app.opts[:scheduler] = Rufus::Scheduler
+  end
 
-class Rufo
-  class << self
-    attr_reader :instance
+  module ClassMethods
+    def inherited subclass
+      super
 
-    def start &block
-      @instance = block.call.new
-      @instance.start
-
-      LOADER.after_reload do
-        @instance.stop
-        @instance = nil
-
-        @instance = block.call.new
-        @instance.start
+      if block = @raw_scheduler_block
+        subclass.schedule(&block)
       end
     end
 
     def schedule &block
-      @schedule ||= block
+      unless block
+        raise DewCraftError, "no block passed to schedule"
+        return
+      end
+
+      @raw_schedule_block = block
+      @schedule_block = block = convert_block block
+
+      public define_method(:_main_run_block, &block)
+
+      stop
     end
   end
 
-  def initialize
-    @scheduler = Rufus::Scheduler.new
-  end
+  module InstanceMethods
+    def initialize env
+      super
 
-  def start
-    LOGGER.wait "Seting schedules"
-    instance_exec @scheduler, &self.class.instance_variable_get(:@schedule)
-    LOGGER.success "Set schedules"
-  end
+      klass = self.class
+      @scheduler = klass.opts[:scheduler].new
+    end
 
-  def stop
-    @scheduler.shutdown
-    @scheduler = nil
-  end
+    def _main_stop_block
+      @scheduler.shutdown
+    end
 
-  def reload!
-    LOGGER.wait "Reseting schedules for reload"
-    @scheduler.pause
-
-    @scheduler.jobs.each(&:unschedule)
-    instance_exec @scheduler, &self.class.instance_variable_get(:@schedule)
-
-    @scheduler.resume
-    LOGGER.success "Reset schedules for reload"
+    def _handle_main_run_block
+      catch :halt do
+        _main_run_block(@scheduler)
+      end
+    end
   end
 end
+
+DewCraft::Unit::DewCraftPlugins.register_plugin :rufo, Rufo

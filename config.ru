@@ -1,13 +1,11 @@
 require_relative "env"
 
-require_relative "app/worker"
-require_relative "app/scheduler"
-
-Rufo.start { Scheduler }
+App.workers
+App.scheduler
 
 if ENV["RACK_ENV"] == "production"
   Zeitwerk::Loader.eager_load_all
-  run Routes::Root.freeze.app
+  run App.routes.freeze.app
 else
-  run ->(env) { Routes::Root.call env }
+  run App.routes
 end
