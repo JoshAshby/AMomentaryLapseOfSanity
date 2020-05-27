@@ -42,4 +42,8 @@ const Selection = {
   start: createAction("selection.start"),
 }
 
-export { ScrapeConfig, Selection }
+const FrameState = {
+  toggle: createAction("frame.toggle"),
+}
+
+export { ScrapeConfig, Selection, FrameState }

@@ -3,11 +3,29 @@ import { createElement, Fragment, Context } from "@bikeshaving/crank"
 
 import SelectorRow from "./SelectorRow"
 import SelectorTable from "./SelectorTable"
-import Selector from "./Selector"
-import RemoveButton from "./RemoveButton"
 
+import RemoveButton from "./RemoveButton"
+import StartSelectingButton from "./StartSelectingButton"
+import AddButton from "./AddButton"
+
+import { ScrapeConfig, Selection } from "../actions"
+
+import findSelectors from "../lib/findSelectors"
+import { addHighlight, removeHighlight } from "../lib/highlightElement"
 import { getForUrl } from "../lib/dataLayer"
-import { ScrapeConfig } from "../actions"
+
+import { toggleFrame } from "../contentScripts/sidebarEntry"
+
+function* CloseButton(this: Context) {
+  this.addEventListener("click", (e) => {
+    e.preventDefault()
+    toggleFrame()
+  })
+
+  while (true) {
+    yield <button>X</button>
+  }
+}
 
 async function* SiteScrapeConfig(
   this: Context,
@@ -17,12 +35,53 @@ async function* SiteScrapeConfig(
     this.addEventListener(ac.type, ac.handler)
   }
 
+  let selectors: Record<string, HTMLElement> = {}
+
+  const setSelectors = (ev: MouseEvent) => {
+    ev.stopImmediatePropagation()
+    ev.preventDefault()
+    ev.stopPropagation()
+
+    if (frame?.contains(ev.target as HTMLElement)) return
+
+    stopSelecting()
+
+    selectors = findSelectors(document.querySelectorAll(":hover"), {
+      ignoreElements: [frame],
+    })
+
+    toggleFrame()
+
+    this.refresh()
+  }
+
+  const stopSelecting = () => {
+    document.removeEventListener("click", setSelectors, { capture: true })
+    document.removeEventListener("mouseover", addHighlight)
+    document.removeEventListener("mouseout", removeHighlight)
+
+    removeHighlight()
+  }
+
+  const startSelecting = () => {
+    document.addEventListener("click", setSelectors, { capture: true })
+    document.addEventListener("mouseover", addHighlight)
+    document.addEventListener("mouseout", removeHighlight)
+  }
+
+  this.addEventListener(Selection.start.type, startSelecting)
+
   for await ({} of this) {
     let { scrape_config } = await getForUrl(url)
 
     yield (
       <Fragment>
-        <strong>ID:</strong> {scrape_config.id}
+        <div style="display: flex; justify-content: space-between;">
+          <StartSelectingButton />
+          <CloseButton />
+        </div>
+
+        <h3>Existing Selectors</h3>
         <SelectorTable>
           {scrape_config.extraction_selectors.map((selector, idx) => {
             const node = document.querySelector(selector) as HTMLElement
@@ -34,7 +93,15 @@ async function* SiteScrapeConfig(
             )
           })}
         </SelectorTable>
-        <Selector frame={frame} scrape_config={scrape_config} />
+
+        <h3>Found Selectors</h3>
+        <SelectorTable>
+          {Object.entries(selectors).map(([selector, node], idx) => (
+            <SelectorRow selector={selector} node={node} crank-key={idx}>
+              <AddButton scrape_config={scrape_config} selector={selector} />
+            </SelectorRow>
+          ))}
+        </SelectorTable>
       </Fragment>
     )
   }

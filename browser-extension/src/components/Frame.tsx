@@ -1,16 +1,5 @@
 /** @jsx createElement */
-import { createElement, Context, Fragment, Children } from "@bikeshaving/crank"
-
-const containerStyle = `
-  position: fixed;
-  bottom: 0px;
-  right: 0px;
-  width: 100%;
-  height: 65%;
-  max-height: 350px;
-  box-sizing: border-box;
-  z-index: 10000;
-`
+import { createElement, Context, Children } from "@bikeshaving/crank"
 
 interface FrameProps {
   children: Children
@@ -18,7 +7,7 @@ interface FrameProps {
 
 function* Frame(this: Context, { children }: FrameProps) {
   while (true) {
-    yield <div style={containerStyle}>{children}</div>
+    yield <div class="amlos_iframe-container">{children}</div>
   }
 }
 
