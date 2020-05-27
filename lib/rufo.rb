@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Rufo
   def self.configure app
     app.opts[:scheduler] = Rufus::Scheduler
@@ -7,16 +9,13 @@ module Rufo
     def inherited subclass
       super
 
-      if block = @raw_scheduler_block
-        subclass.schedule(&block)
-      end
+      return unless block = @raw_scheduler_block
+
+      subclass.schedule(&block)
     end
 
     def schedule &block
-      unless block
-        raise DewCraftError, "no block passed to schedule"
-        return
-      end
+      fail DewCraftError, "no block passed to schedule" unless block
 
       @raw_schedule_block = block
       @schedule_block = block = convert_block block

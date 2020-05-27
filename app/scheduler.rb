@@ -1,10 +1,15 @@
 # frozen_string_literal: true
-require_relative "../lib/rufo"
+#
+Scheduler = Rufus::Scheduler.new
 
-class Scheduler < DewCraft::Unit
-  plugin :rufo
+Scheduler.every "1m", ScrapeAndExtractJob::Scheduler, first: :now
 
-  schedule do |s|
-    s.every "1m", ScrapeAndExtractJob::Scheduler, first: :now
-  end
-end
+# require_relative "../lib/rufo"
+
+# class Scheduler < DewCraft::Unit
+  # plugin :rufo
+
+  # schedule do |s|
+    # s.every "1m", ScrapeAndExtractJob::Scheduler, first: :now
+  # end
+# end

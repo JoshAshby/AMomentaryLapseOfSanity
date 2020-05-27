@@ -81,17 +81,8 @@ class DewCraft
       end
 
       def reloader
-        @reloader ||= Reloader.new(opts[:autoload_folders]).tap do |reloader|
-          reloader.start
-        end
+        @reloader ||= Reloader.new(opts[:autoload_folders]).tap(&:start)
       end
-
-      # def set key, &block
-        # define_singleton_method key do
-          # reloader
-          # block.call
-        # end
-      # end
 
       def unit key, &block
         define_singleton_method key do
@@ -118,8 +109,8 @@ class DewCraft
         h = @plugins
 
         unless plugin = h[name]
-          require "dew_craft/plugins/#{name}"
-          raise DewCraftError, "Plugin #{name} did not register itself correctly in DewCraft::DewCraftPlugins" unless plugin = h[name]
+          require "dew_craft/plugins/#{ name }"
+          fail DewCraftError, "Plugin #{ name } did not register itself correctly in DewCraft::DewCraftPlugins" unless plugin = h[name]
         end
 
         plugin
@@ -143,18 +134,16 @@ class DewCraft
 
             subclass.instance_variable_set(:@opts, opts.dup)
             subclass.opts.delete(:subclassed)
-            subclass.opts.to_a.each do |k,v|
-              if (v.is_a?(Array) || v.is_a?(Hash))
-                subclass.opts[k] = v.dup
-              end
+            subclass.opts.to_a.each do |k, v|
+              subclass.opts[k] = v.dup if v.is_a?(Array) || v.is_a?(Hash)
             end
           end
 
           def plugin(plugin, *args, &block)
-            raise DewCraftError, "Cannot add a plugin to a frozen Roda class" if frozen?
+            fail DewCraftError, "Cannot add a plugin to a frozen Roda class" if frozen?
 
             plugin = DewCraftPlugins.load_plugin(plugin) if plugin.is_a?(Symbol)
-            raise DewCraftError, "Invalid plugin type: #{plugin.class.inspect}" unless plugin.is_a?(Module)
+            fail DewCraftError, "Invalid plugin type: #{ plugin.class.inspect }" unless plugin.is_a?(Module)
 
             plugin.load_dependencies(self, *args, &block) if plugin.respond_to?(:load_dependencies)
 
@@ -170,7 +159,7 @@ class DewCraft
           end
 
           def build_run_app
-            @app = -> (env) { new(env) }
+            @app = ->(env) { new(env) }
           end
 
           def app
@@ -183,7 +172,7 @@ class DewCraft
           end
 
           def stop
-            @instance._handle_main_stop_block if @instance
+            @instance&._handle_main_stop_block
             @instance = nil
             @app = nil
           end
@@ -197,7 +186,7 @@ class DewCraft
           def initialize env; end
 
           def opts
-            self.klass.opts
+            klass.opts
           end
 
           def stop; end

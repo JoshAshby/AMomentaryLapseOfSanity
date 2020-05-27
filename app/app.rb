@@ -1,11 +1,17 @@
+# frozen_string_literal: true
+
 class App < DewCraft::Application
   class << self
     def queue
-      Localjob.new
+      @queue ||= Localjob.new
+    end
+
+    def enqueue job
+      queue << job
     end
 
     def workers
-      @worker ||= Localjob::Worker.new(App.queue, logger: App.logger).yield_self do |w|
+      @workers ||= Localjob::Worker.new(App.queue, logger: App.logger).yield_self do |w|
         w.work thread: true
       end
     end
@@ -19,11 +25,15 @@ class App < DewCraft::Application
     def routes
       Routes::Root.app
     end
+
+    def scheduler
+      Scheduler
+    end
   end
 
   opts[:autoload_folders] = %w[ app app/models app/jobs ]
 
-  unit(:scheduler) { Scheduler }
+  # unit(:scheduler) { Scheduler }
 
   reload!
 end

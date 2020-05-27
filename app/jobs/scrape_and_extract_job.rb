@@ -6,7 +6,7 @@ class ScrapeAndExtractJob
       App.logger.wait "Looking for active ScrapeConfigs"
 
       scrape_configs = ScrapeConfig.where(active: true).select(:id).each do |row|
-        App.queue << ScrapeAndExtractJob.new(row[:id])
+        App.enqueue ScrapeAndExtractJob.new(row[:id])
       end
 
       App.logger.success "Scheduled #{ scrape_configs.count } ScrapeConfigs"
