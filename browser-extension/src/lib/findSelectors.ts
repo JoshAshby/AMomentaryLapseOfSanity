@@ -22,13 +22,16 @@ const findSelectors = (
         !ignoreTags.includes(node.nodeName)
     )
     .reverse()
+    .map((node) =>
+      finder(node, {
+        className: (name) => !name.startsWith("amlos_"),
+        seedMinLength: 4,
+      })
+    )
     .reduce(
-      (memo, node) => ({
+      (memo, selector) => ({
         ...memo,
-        [finder(node, {
-          className: (name) => !name.startsWith("amlos_"),
-          seedMinLength: 4,
-        })]: node,
+        [selector]: document.querySelectorAll(selector),
       }),
       {}
     )

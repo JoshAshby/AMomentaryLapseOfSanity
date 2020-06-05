@@ -35,7 +35,7 @@ async function* SiteScrapeConfig(
     this.addEventListener(ac.type, ac.handler)
   }
 
-  let selectors: Record<string, HTMLElement> = {}
+  let selectors: Record<string, NodeListOf<Element>> = {}
 
   const setSelectors = (ev: MouseEvent) => {
     ev.stopImmediatePropagation()
@@ -84,10 +84,10 @@ async function* SiteScrapeConfig(
         <h3>Existing Selectors</h3>
         <SelectorTable>
           {scrape_config.extraction_selectors.map((selector, idx) => {
-            const node = document.querySelector(selector) as HTMLElement
+            const nodes = document.querySelectorAll(selector)
 
             return (
-              <SelectorRow selector={selector} node={node} crank-key={idx}>
+              <SelectorRow selector={selector} nodes={nodes} crank-key={idx}>
                 <RemoveButton scrape_config={scrape_config} idx={idx} />
               </SelectorRow>
             )
@@ -96,8 +96,8 @@ async function* SiteScrapeConfig(
 
         <h3>Found Selectors</h3>
         <SelectorTable>
-          {Object.entries(selectors).map(([selector, node], idx) => (
-            <SelectorRow selector={selector} node={node} crank-key={idx}>
+          {Object.entries(selectors).map(([selector, nodes], idx) => (
+            <SelectorRow selector={selector} nodes={nodes} crank-key={idx}>
               <AddButton scrape_config={scrape_config} selector={selector} />
             </SelectorRow>
           ))}

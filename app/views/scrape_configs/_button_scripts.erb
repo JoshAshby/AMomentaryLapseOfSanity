@@ -27,4 +27,27 @@ function removeButton() {
     }
   }
 }
+
+document.addEventListener("load", () => {
+let freqRadio = document.getElementById("frequency")
+let todRadio = document.getElementById("time_of_day")
+
+let freqPicker = document.getElementById("frequency_schedule")
+let todPicker = document.getElementById("time_of_day_schedule")
+
+function toggle() {
+  if (freqRadio.checked) {
+    freqPicker.classList.remove("hidden")
+    todPicker.classList.add("hidden")
+  } else {
+    freqPicker.classList.add("hidden")
+    todPicker.classList.remove("hidden")
+  }
+}
+
+toggle()
+
+freqRadio.addEventListener("click", toggle)
+todRadio.addEventListener("click", toggle)
+})
 </script>

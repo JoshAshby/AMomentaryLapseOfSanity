@@ -1,0 +1,19 @@
+<span style="display: flex; justify-content: space-between; align-items: baseline;">
+  <h3>Scrape Result <%= @scrape_result.id %> for Scrape Config <%= @scrape_result.scrape_config.id %></h3>
+
+  <% if @scrape_result.scrape_config.last_result != @scrape_result %>
+    <a href="/scrape_result/<%= @scrape_result.scrape_config.last_result.id %>">Jump to latest</a>
+  <% end %>
+</span>
+
+<% @scrape_result.extractions.each do |selector, values| %>
+  <details>
+    <summary><%= selector %></summary>
+    <ul>
+      <% Array(values).each do |value| %>
+        <li><%= value %></li>
+      <% end %>
+    </ul>
+  </details>
+<% end %>
+

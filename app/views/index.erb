@@ -10,6 +10,7 @@
       <th>Site URL</th>
       <th># of Extracts</th>
       <th>Active?</th>
+      <th>Last Scraped At</th>
       <th></th>
     </tr>
   </thead>
@@ -24,6 +25,15 @@
         </td>
         <td>
           <%= "IN" unless scrape_config.active %>ACTIVE
+        </td>
+        <td>
+          <% if scrape_config.last_result %>
+            <a href="/scrape_result/<%= scrape_config.last_result.id %>">
+              <%= scrape_config.last_result.created_at %>
+            </a>
+          <% else %>
+            Not Scraped Yet
+          <% end %>
         </td>
         <td>
           <a href="/scrape_config/<%= scrape_config.id %>">Edit</a>

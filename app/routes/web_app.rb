@@ -28,7 +28,19 @@ class Routes::WebApp < Roda
         end
 
         r.post do
-          @scrape_config.update r.params
+          data = r.params
+
+          type = data.delete "schedule_type"
+          tod = data.delete "time_of_day"
+          freq = data.delete "schedule_frequency"
+
+          if type == "frequency"
+            data["schedule"] = { type: type, frequency: freq }
+          else
+            data["schedule"] = { type: type, time_of_day: tod }
+          end
+
+          @scrape_config.update data
 
           r.redirect "/"
         end
@@ -42,6 +54,16 @@ class Routes::WebApp < Roda
         @scrape_config = ScrapeConfig.create r.params
 
         r.redirect "/scrape_config/#{ @scrape_config.id }"
+      end
+    end
+
+    r.on "scrape_result" do
+      r.on Integer do |id|
+        @scrape_result = ScrapeResult[id]
+
+        r.get do
+          view "scrape_results/view"
+        end
       end
     end
 

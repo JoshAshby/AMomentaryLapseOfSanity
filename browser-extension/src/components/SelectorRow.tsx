@@ -3,18 +3,18 @@ import { createElement, Children } from "@bikeshaving/crank"
 
 function SelectorRow({
   selector,
-  node,
+  nodes,
   children,
   ...props
 }: {
   selector: string
-  node: HTMLElement
+  nodes: NodeListOf<Element>
   children?: Children
 }) {
   return (
     <tr {...props}>
       <td>{selector}</td>
-      <td>{node.innerText.substring(0, 80)}</td>
+      <td>{nodes.length}</td>
       <td>{children}</td>
     </tr>
   )

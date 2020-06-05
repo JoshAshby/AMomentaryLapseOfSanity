@@ -1,0 +1,35 @@
+.amlos_highlight {
+  outline: fuchsia dotted 1px !important;
+  cursor: crosshair !important;
+}
+
+.amlos_iframe-container {
+  position: fixed;
+  bottom: 0px;
+  right: 0px;
+  width: 100%;
+  height: 65%;
+  max-height: 350px;
+  box-sizing: border-box;
+  z-index: 10000;
+  transition: transform 0.3s cubic-bezier(0, 0, 0.3, 1);
+}
+
+.amlos_iframe-container.-hidden {
+  cursor: pointer;
+  transform: translateY(94%);
+}
+
+.amlos_iframe-container.-hidden > iframe {
+  pointer-events: none;
+}
+
+.amlos_iframe-container.-hidden:hover {
+  transform: translateY(92%);
+}
+
+.amlos_iframe {
+  border: none;
+  width: 100%;
+  height: 100%;
+}

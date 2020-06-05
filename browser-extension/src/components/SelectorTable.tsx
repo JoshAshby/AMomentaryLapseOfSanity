@@ -6,9 +6,9 @@ function SelectorTable({ children }: { children: Children }) {
     <table style="width: 100%;">
       <thead>
         <tr>
-          <th style="width: 45%;">Selection</th>
-          <th style="width: 45%;">Content</th>
-          <th style="width: 10%;">Actions</th>
+          <th style="width: 45%;">Selector</th>
+          <th style="width: 45%;"># Elements</th>
+          <th style="width: 10%;"></th>
         </tr>
       </thead>
       <tbody>{children}</tbody>

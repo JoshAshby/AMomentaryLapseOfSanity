@@ -12,11 +12,53 @@
     <label for="url">URL</label>
     <input type="text" name="url" value="<%= @scrape_config.url %>" />
 
-    <input type="hidden" name="active" value="false" />
-    <label for="active">
+    <div>
+      <input type="hidden" name="active" value="false" />
       <input type="checkbox" name="active" <%= "checked" if @scrape_config.active %>>
-      Active?
-    </label>
+      <label for="active">Active?</label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Schedule</legend>
+
+    <div>
+      <input type="radio" id="frequency" name="schedule_type" value="frequency" <%= "checked" if @scrape_config.schedule["type"] == "frequency" %> />
+      <label for="frequency">Frequency</label>
+    </div>
+
+    <div>
+      <input type="radio" id="time_of_day" name="schedule_type" value="time_of_day" <%= "checked" if @scrape_config.schedule["type"] == "time_of_day" %> />
+      <label for="time_of_day">Time of Day</label>
+    </div>
+
+    <div id="frequency_schedule" class="<%= "hidden" unless @scrape_config.schedule["type"] == "frequency" %>">
+      <select name="schedule_frequency">
+        <option value="5 minutes" <%= "selected" if @scrape_config.schedule["frequency"] == "5 minutes" %>>5 Minutes</option>
+        <option value="15 minutes" <%= "selected" if @scrape_config.schedule["frequency"] == "15 minutes" %>>15 Minutes</option>
+        <option value="30 minutes" <%= "selected" if @scrape_config.schedule["frequency"] == "30 minutes" %>>30 Minutes</option>
+        <option value="45 minutes" <%= "selected" if @scrape_config.schedule["frequency"] == "45 minutes" %>>45 Minutes</option>
+        <option value="1 hour" <%= "selected" if @scrape_config.schedule["frequency"] == "1 hour" %>>1 Hour</option>
+        <option value="6 hours" <%= "selected" if @scrape_config.schedule["frequency"] == "6 hours" %>>6 Hours</option>
+        <option value="12 hours" <%= "selected" if @scrape_config.schedule["frequency"] == "12 hours" %>>12 Hours</option>
+        <option value="1 day" <%= "selected" if @scrape_config.schedule["frequency"] == "1 day" %>>1 Day</option>
+        <option value="2 days" <%= "selected" if @scrape_config.schedule["frequency"] == "2 days" %>>2 Days</option>
+        <option value="1 week" <%= "selected" if @scrape_config.schedule["frequency"] == "1 week" %>>1 Week</option>
+      </select>
+    </div>
+
+    <div id="time_of_day_schedule" style="display: flex; justify-content: space-between;" class="<%= "hidden" unless @scrape_config.schedule["type"] == "time_of_day" %>">
+      <% %w[ Sunday Monday Tuesday Wednesday Thursday Friday Saturday ].each do |day| %>
+        <div>
+          <label for="time_of_day[<%= day.downcase %>][]"><%= day %></label>
+          <select name="time_of_day[<%= day.downcase %>][]" multiple>
+            <% 1440.times.select { _1 % 15 == 0 }.each_with_object({}) {  _2[_1.to_s] = (Time.new(0000, 1, 1, 0, 0, 0, 0) + (_1 * 60)).strftime "%l:%M %p" }.each do |minutes, time| %>
+              <option value="<%= minutes %>" <%= "selected" if @scrape_config.schedule.dig("time_of_day", day.downcase)&.include?(minutes) %>><%= time %></option>
+            <% end %>
+          </select>
+        </div>
+      <% end %>
+    </div>
   </fieldset>
 
   <fieldset>

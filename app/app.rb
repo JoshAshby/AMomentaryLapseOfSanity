@@ -6,28 +6,10 @@ class App < DewCraft::Application
       @queue ||= Localjob.new
     end
 
-    def enqueue job
-      queue << job
-    end
-
-    def workers
-      @workers ||= Localjob::Worker.new(App.queue, logger: App.logger).yield_self do |w|
-        w.work thread: true
-      end
-    end
-
     def browser
       @browser ||= Ferrum::Browser.new(timeout: 30).yield_self do |b|
         b.contexts.create
       end
-    end
-
-    def routes
-      Routes::Root.app
-    end
-
-    def scheduler
-      Scheduler
     end
   end
 
@@ -35,5 +17,5 @@ class App < DewCraft::Application
 
   # unit(:scheduler) { Scheduler }
 
-  reload!
+  # reload!
 end

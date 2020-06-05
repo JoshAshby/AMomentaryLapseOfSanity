@@ -5,11 +5,22 @@ class ScrapeAndExtractJob
     def self.call
       App.logger.wait "Looking for active ScrapeConfigs"
 
-      scrape_configs = ScrapeConfig.where(active: true).select(:id).each do |row|
-        App.enqueue ScrapeAndExtractJob.new(row[:id])
-      end
+      jb = Sequel.pg_jsonb_op(:schedule)
 
-      App.logger.success "Scheduled #{ scrape_configs.count } ScrapeConfigs"
+      last_scrape_results = ScrapeResult.distinct(:scrape_config_id).order_by(:scrape_config_id, Sequel.desc(:created_at))
+      scrape_configs = ScrapeConfig.where(active: true)
+
+      frequency_scrape_configs = scrape_configs
+        .join_table(:left_outer, last_scrape_results.as(:last_result), scrape_config_id: :id)
+        .where { jb.has_key?("type") }
+        .where({ jb.get_text("type") => "frequency" })
+        .where { Sequel[:last_result][:created_at] + jb.get_text("frequency").cast("interval") < Sequel.function("NOW") }
+        .select { Sequel[:scrape_configs][:id] }
+        .each  do |row|
+          App.queue << ScrapeAndExtractJob.new(row[:id])
+        end
+
+      App.logger.success "Scheduled #{ frequency_scrape_configs.count } frequency based ScrapeConfigs"
     end
   end
 
@@ -24,9 +35,9 @@ class ScrapeAndExtractJob
     page.goto @scrape_config[:url]
 
     extractions = @scrape_config[:extraction_selectors].each_with_object({}) do |selector, memo|
-      result = page.at_css selector
-      App.logger.info "Extracted", selector: selector, text: result.inner_text
-      memo[selector] = result.inner_text
+      nodes = page.css selector
+      App.logger.info "Extracted", selector: selector, nodes: nodes.length
+      memo[selector] = nodes.map(&:inner_text)
     end
 
     page.close
